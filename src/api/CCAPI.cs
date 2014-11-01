@@ -110,69 +110,62 @@ namespace PS3Lib
             RegistryKey Key = Registry
                 .CurrentUser
                 .OpenSubKey(@"Software\FrenchModdingTeam\CCAPI\InstallFolder");
-
+            
             if (Key != null)
-            {
-                string Path = Key.GetValue("path") as String;
-                if (!string.IsNullOrEmpty(Path))
-                {
-                    string DllUrl = Path + @"\CCAPI.dll";
-                    if (File.Exists(DllUrl))
-                    {
-                        if (BitConverter.ToString(MD5.Create()
-                            .ComputeHash(File.ReadAllBytes(DllUrl)))
-                            .Replace("-", "").Equals(CCAPIHASH))
-                        {
-                            if (libModule == IntPtr.Zero)
-                                libModule = LoadLibrary(DllUrl);
-
-                            if (libModule != IntPtr.Zero)
-                            {
-                                connectConsole = (connectConsoleDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIConnectConsole"), typeof(connectConsoleDelegate));
-                                disconnectConsole = (disconnectConsoleDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIDisconnectConsole"), typeof(disconnectConsoleDelegate));
-                                getConnectionStatus = (getConnectionStatusDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetConnectionStatus"), typeof(getConnectionStatusDelegate));
-                                getConsoleInfo = (getConsoleInfoDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetConsoleInfo"), typeof(getConsoleInfoDelegate));
-                                getDllVersion = (getDllVersionDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetDllVersion"), typeof(getDllVersionDelegate));
-                                getFirmwareInfo = (getFirmwareInfoDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetFirmwareInfo"), typeof(getFirmwareInfoDelegate));
-                                getNumberOfConsoles = (getNumberOfConsolesDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetNumberOfConsoles"), typeof(getNumberOfConsolesDelegate));
-                                getProcessList = (getProcessListDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetProcessList"), typeof(getProcessListDelegate));
-
-                                getProcessMemory = (getProcessMemoryDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetMemory"), typeof(getProcessMemoryDelegate));
-                                getProcessName = (getProcessNameDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetProcessName"), typeof(getProcessNameDelegate));
-                                getTemperature = (getTemperatureDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetTemperature"), typeof(getTemperatureDelegate));
-                                notify = (notifyDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIVshNotify"), typeof(notifyDelegate));
-                                ringBuzzer = (ringBuzzerDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIRingBuzzer"), typeof(ringBuzzerDelegate));
-                                setBootConsoleIds = (setBootConsoleIdsDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetBootConsoleIds"), typeof(setBootConsoleIdsDelegate));
-                                setConsoleIds = (setConsoleIdsDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetConsoleIds"), typeof(setConsoleIdsDelegate));
-                                setConsoleLed = (setConsoleLedDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetConsoleLed"), typeof(setConsoleLedDelegate));
-
-                                setProcessMemory = (setProcessMemoryDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetMemory"), typeof(setProcessMemoryDelegate));
-                                shutdown = (shutdownDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIShutdown"), typeof(shutdownDelegate));
-                            }
-                            else
-                            {
-                                MessageBox.Show("Impossible to load CCAPI.dll version 2.60.", "CCAPI.dll cannot be load", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("You're not using the right CCAPI.dll please install the version 2.60.", "CCAPI.dll version incorrect", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("You need to install CCAPI to use this library.", "CCAPI.dll not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Invalid CCAPI folder, please re-install it.", "CCAPI not installed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-            else
             {
                 MessageBox.Show("You need to install CCAPI to use this library.", "CCAPI not installed", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            
+            string Path = Key.GetValue("path") as String;
+            if (string.IsNullOrEmpty(Path))
+            {
+                MessageBox.Show("Invalid CCAPI folder, please re-install it.", "CCAPI not installed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            string DllUrl = Path + @"\CCAPI.dll";
+            if (!File.Exists(DllUrl))
+            {
+                MessageBox.Show("You need to install CCAPI to use this library.", "CCAPI.dll not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            if (!BitConverter.ToString(MD5.Create()
+                .ComputeHash(File.ReadAllBytes(DllUrl)))
+                .Replace("-", "").Equals(CCAPIHASH))
+            {
+                MessageBox.Show("You're not using the right CCAPI.dll please install the version 2.60.", "CCAPI.dll version incorrect", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            
+            if (libModule == IntPtr.Zero)
+            {
+                libModule = LoadLibrary(DllUrl);
+            }
+
+            if (libModule == IntPtr.Zero)
+            {
+                MessageBox.Show("Impossible to load CCAPI.dll version 2.60.", "CCAPI.dll cannot be load", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            connectConsole = (connectConsoleDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIConnectConsole"), typeof(connectConsoleDelegate));
+            disconnectConsole = (disconnectConsoleDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIDisconnectConsole"), typeof(disconnectConsoleDelegate));
+            getConnectionStatus = (getConnectionStatusDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetConnectionStatus"), typeof(getConnectionStatusDelegate));
+            getConsoleInfo = (getConsoleInfoDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetConsoleInfo"), typeof(getConsoleInfoDelegate));
+            getDllVersion = (getDllVersionDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetDllVersion"), typeof(getDllVersionDelegate));
+            getFirmwareInfo = (getFirmwareInfoDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetFirmwareInfo"), typeof(getFirmwareInfoDelegate));
+            getNumberOfConsoles = (getNumberOfConsolesDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetNumberOfConsoles"), typeof(getNumberOfConsolesDelegate));
+            getProcessList = (getProcessListDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetProcessList"), typeof(getProcessListDelegate));
+
+            getProcessMemory = (getProcessMemoryDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetMemory"), typeof(getProcessMemoryDelegate));
+            getProcessName = (getProcessNameDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetProcessName"), typeof(getProcessNameDelegate));
+            getTemperature = (getTemperatureDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIGetTemperature"), typeof(getTemperatureDelegate));
+            notify = (notifyDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIVshNotify"), typeof(notifyDelegate));
+            ringBuzzer = (ringBuzzerDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIRingBuzzer"), typeof(ringBuzzerDelegate));
+            setBootConsoleIds = (setBootConsoleIdsDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetBootConsoleIds"), typeof(setBootConsoleIdsDelegate));
+            setConsoleIds = (setConsoleIdsDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetConsoleIds"), typeof(setConsoleIdsDelegate));
+            setConsoleLed = (setConsoleLedDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetConsoleLed"), typeof(setConsoleLedDelegate));
+
+            setProcessMemory = (setProcessMemoryDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPISetMemory"), typeof(setProcessMemoryDelegate));
+            shutdown = (shutdownDelegate)Marshal.GetDelegateForFunctionPointer(GetProcAddress(libModule, "CCAPIShutdown"), typeof(shutdownDelegate));
+                            
         }
         
         public enum IdType
@@ -699,7 +692,7 @@ namespace PS3Lib
         {
             List<ConsoleInfo> data = new List<ConsoleInfo>();
             int targetCount = getNumberOfConsoles();
-            IntPtr name = Marshal.AllocHGlobal((int)(256)), 
+            IntPtr name = Marshal.AllocHGlobal((int)(256)),
                        ip = Marshal.AllocHGlobal((int)(256));
             for (int i = 0; i < targetCount; i++)
             {
@@ -742,7 +735,7 @@ namespace PS3Lib
                     .ToArray();
                 }
             }
-            catch { 
+            catch {
                 MessageBox.Show("Incorrect value (empty)", "StringToByteArray Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return new byte[1];
             }
